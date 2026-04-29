@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Trening</title>
+<title>Drinks</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -16,8 +16,8 @@
   --edge:   #e2ddd6;
   --muted:  #8a8a9a;
   --muted2: #b0aaaa;
-  --duo:    #4a9e6e;
-  --solo:   #c45a5a;
+  --øl:     #b5730a;
+  --vin:    #7a1e2e;
   --r:      14px;
   --rs:     9px;
 }
@@ -31,12 +31,27 @@ body {
   padding-bottom: 40px;
 }
 
+/* APP HEADER */
+.app-header {
+  padding: 18px 20px 10px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--edge);
+  text-align: center;
+}
+.app-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
 /* WEEK NAV */
 .week-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 10px 20px;
   background: var(--paper);
   border-bottom: 1px solid var(--edge);
   position: sticky;
@@ -91,8 +106,8 @@ body {
 }
 .day-chip .dn { font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; }
 .day-chip .dd { font-size: 15px; font-weight: 600; line-height: 1.2; }
-.day-chip .chip-dots { display: flex; gap: 2px; height: 5px; align-items: center; margin-top: 2px; }
-.day-chip .chip-dots span { width: 4px; height: 4px; border-radius: 50%; display: block; }
+.day-chip .chip-dots { display: flex; gap: 2px; height: 5px; align-items: center; margin-top: 2px; flex-wrap: wrap; justify-content: center; }
+.day-chip .chip-dots span { width: 4px; height: 4px; border-radius: 50%; display: block; flex-shrink: 0; }
 .day-chip.active { background: var(--ink); border-color: var(--ink); color: var(--surface); }
 
 /* REGISTER */
@@ -107,31 +122,65 @@ body {
   color: var(--muted);
   margin-bottom: 12px;
 }
-.reg-buttons { display: flex; gap: 10px; }
+.reg-buttons { display: flex; flex-direction: column; gap: 10px; }
 
-.reg-btn {
-  flex: 1;
-  border: none;
+.reg-row {
+  display: flex;
+  align-items: center;
   border-radius: var(--r);
-  padding: 22px 12px;
+  overflow: hidden;
+  height: 62px;
+}
+
+.reg-adj {
+  width: 54px;
+  height: 100%;
+  border: none;
   font-family: 'Geist Mono', monospace;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 26px;
+  font-weight: 400;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.1s, box-shadow 0.15s;
+  color: white;
+  flex-shrink: 0;
+  transition: filter 0.1s;
+  user-select: none;
+}
+.reg-adj:active { filter: brightness(0.85); }
+
+.reg-center {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   color: white;
 }
-.reg-btn:active { transform: scale(0.97); }
+.reg-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.reg-count {
+  font-size: 22px;
+  font-weight: 600;
+  min-width: 28px;
+  text-align: center;
+  line-height: 1;
+  background: rgba(0,0,0,0.15);
+  border-radius: 7px;
+  padding: 2px 8px;
+}
 
-.reg-btn-duo { background: var(--duo); }
-.reg-btn-solo { background: var(--solo); }
+.reg-row-øl .reg-adj,
+.reg-row-øl .reg-center { background: var(--øl); }
 
-.reg-btn-duo.on  { box-shadow: 0 0 0 3px rgba(74,158,110,0.35); }
-.reg-btn-solo.on { box-shadow: 0 0 0 3px rgba(196,90,90,0.35); }
+.reg-row-vin .reg-adj,
+.reg-row-vin .reg-center { background: var(--vin); }
 
 /* DIVIDER */
 .section-divider {
@@ -222,6 +271,9 @@ body {
   display: flex;
   gap: 2px;
   min-height: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 30px;
 }
 .cal-dot {
   width: 5px; height: 5px;
@@ -285,6 +337,10 @@ body {
 </head>
 <body>
 
+<div class="app-header">
+  <div class="app-title">Drinks</div>
+</div>
+
 <div class="week-nav">
   <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
   <span class="week-label" id="week-label">Uke —</span>
@@ -296,8 +352,22 @@ body {
 <div class="register-section">
   <div class="date-heading" id="date-heading">—</div>
   <div class="reg-buttons">
-    <button class="reg-btn reg-btn-duo" id="btn-duo" onclick="toggle('duo')">DUO</button>
-    <button class="reg-btn reg-btn-solo" id="btn-solo" onclick="toggle('solo')">SOLO</button>
+    <div class="reg-row reg-row-øl">
+      <button class="reg-adj" onclick="adjust('øl', -1)">−</button>
+      <div class="reg-center">
+        <span class="reg-name">Øl</span>
+        <span class="reg-count" id="count-øl">0</span>
+      </div>
+      <button class="reg-adj" onclick="adjust('øl', 1)">+</button>
+    </div>
+    <div class="reg-row reg-row-vin">
+      <button class="reg-adj" onclick="adjust('vin', -1)">−</button>
+      <div class="reg-center">
+        <span class="reg-name">Vin</span>
+        <span class="reg-count" id="count-vin">0</span>
+      </div>
+      <button class="reg-adj" onclick="adjust('vin', 1)">+</button>
+    </div>
   </div>
 </div>
 
@@ -327,11 +397,11 @@ body {
 const DAYS_NO   = ['Man','Tir','Ons','Tor','Fre','Lør','Søn'];
 const DAYS_LONG = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'];
 const MONTHS_NO = ['Januar','Februar','Mars','April','Mai','Juni','Juli','August','September','Oktober','November','Desember'];
-const DUO_C  = '#4a9e6e';
-const SOLO_C = '#c45a5a';
+const ØL_C  = '#b5730a';
+const VIN_C = '#7a1e2e';
 
-function load() { try { return JSON.parse(localStorage.getItem('ds_v1') || '{}'); } catch { return {}; } }
-function save(d) { localStorage.setItem('ds_v1', JSON.stringify(d)); }
+function load() { try { return JSON.parse(localStorage.getItem('drinks_v1') || '{}'); } catch { return {}; } }
+function save(d) { localStorage.setItem('drinks_v1', JSON.stringify(d)); }
 
 function ds(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -366,17 +436,25 @@ function weekDates() {
 function changeWeek(n) { weekOff += n; render(); }
 function changeMonth(n) { monthOff += n; renderCal(); renderStats(); }
 
-function toggle(type) {
+function adjust(type, delta) {
   const all = load();
   if (!all[activeDay]) all[activeDay] = {};
-  all[activeDay][type] = !all[activeDay][type];
-  if (!all[activeDay].duo && !all[activeDay].solo) delete all[activeDay];
+  const cur = all[activeDay][type] || 0;
+  const next = Math.max(0, cur + delta);
+  if (next === 0) {
+    delete all[activeDay][type];
+  } else {
+    all[activeDay][type] = next;
+  }
+  if (!all[activeDay].øl && !all[activeDay].vin) delete all[activeDay];
   save(all);
   render();
-  toast(type.toUpperCase() + (all[activeDay] && all[activeDay][type] ? ' ✓' : ' fjernet'));
+  const val = (all[activeDay] && all[activeDay][type]) || 0;
+  if (delta > 0) toast(`${type === 'øl' ? '🍺' : '🍷'} +1 (${val} totalt)`);
+  else if (delta < 0 && cur > 0) toast(`${type === 'øl' ? '🍺' : '🍷'} −1 (${val} totalt)`);
 }
 
-function render() { renderStrip(); renderButtons(); renderCal(); renderStats(); }
+function render() { renderStrip(); renderCounts(); renderCal(); renderStats(); }
 
 function renderStrip() {
   const dates = weekDates();
@@ -397,9 +475,13 @@ function renderStrip() {
     const isActive = key === activeDay;
     btn.className = 'day-chip' + (isActive ? ' active' : '');
 
+    const ølCount  = e.øl  || 0;
+    const vinCount = e.vin || 0;
     let dotHtml = '<div class="chip-dots">';
-    if (e.duo)  dotHtml += `<span style="background:${isActive ? 'rgba(255,255,255,0.7)' : DUO_C}"></span>`;
-    if (e.solo) dotHtml += `<span style="background:${isActive ? 'rgba(255,255,255,0.7)' : SOLO_C}"></span>`;
+    for (let i = 0; i < Math.min(ølCount, 3); i++)
+      dotHtml += `<span style="background:${isActive ? 'rgba(255,255,255,0.7)' : ØL_C}"></span>`;
+    for (let i = 0; i < Math.min(vinCount, 3); i++)
+      dotHtml += `<span style="background:${isActive ? 'rgba(255,255,255,0.7)' : VIN_C}"></span>`;
     dotHtml += '</div>';
 
     btn.innerHTML = `<span class="dn">${DAYS_NO[(d.getDay()+6)%7]}</span><span class="dd">${d.getDate()}</span>${dotHtml}`;
@@ -408,11 +490,11 @@ function renderStrip() {
   });
 }
 
-function renderButtons() {
+function renderCounts() {
   const all = load();
   const e   = all[activeDay] || {};
-  document.getElementById('btn-duo').classList.toggle('on', !!e.duo);
-  document.getElementById('btn-solo').classList.toggle('on', !!e.solo);
+  document.getElementById('count-øl').textContent  = e.øl  || 0;
+  document.getElementById('count-vin').textContent = e.vin || 0;
 }
 
 function renderCal() {
@@ -454,9 +536,13 @@ function renderCal() {
     if (key === activeDay) cls += ' is-selected';
     cell.className = cls;
 
+    const ølCount  = e.øl  || 0;
+    const vinCount = e.vin || 0;
     let dots = '';
-    if (e.duo)  dots += `<div class="cal-dot" style="background:${DUO_C}"></div>`;
-    if (e.solo) dots += `<div class="cal-dot" style="background:${SOLO_C}"></div>`;
+    for (let i = 0; i < Math.min(ølCount, 4); i++)
+      dots += `<div class="cal-dot" style="background:${ØL_C}"></div>`;
+    for (let i = 0; i < Math.min(vinCount, 4); i++)
+      dots += `<div class="cal-dot" style="background:${VIN_C}"></div>`;
 
     cell.innerHTML = `
       <div class="cal-num-wrap"><span class="cal-num">${day}</span></div>
@@ -474,7 +560,7 @@ function renderStats() {
   const all = load();
   const daysInMo = new Date(yr, mi + 1, 0).getDate();
 
-  let duo = 0, solo = 0;
+  let ølMonth = 0, vinMonth = 0;
   const allWeeks = new Set();
 
   for (let day = 1; day <= daysInMo; day++) {
@@ -482,33 +568,55 @@ function renderStats() {
     const e   = all[key] || {};
     const [wy, wk] = isoWeek(new Date(yr, mi, day));
     allWeeks.add(`${wy}-${wk}`);
-    if (e.duo)  duo++;
-    if (e.solo) solo++;
+    if (e.øl)  ølMonth  += e.øl;
+    if (e.vin) vinMonth += e.vin;
   }
 
+  // This week
+  const weekDays = [];
+  const ws = mondayOf(new Date());
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(ws); d.setDate(ws.getDate() + i);
+    weekDays.push(ds(d));
+  }
+  let ølWeek = 0, vinWeek = 0;
+  weekDays.forEach(key => {
+    const e = all[key] || {};
+    ølWeek  += e.øl  || 0;
+    vinWeek += e.vin || 0;
+  });
+
   const weeks = allWeeks.size || 1;
-  const duoAvg  = (duo  / weeks).toFixed(1);
-  const soloAvg = (solo / weeks).toFixed(1);
+  const ølAvg  = (ølMonth  / weeks).toFixed(1);
+  const vinAvg = (vinMonth / weeks).toFixed(1);
 
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card">
       <div class="stat-half">
+        <div class="stat-row-label">Denne uken</div>
+        <div class="stat-row-val" style="color:${ØL_C}">${ølWeek}</div>
+      </div>
+      <div class="stat-half">
         <div class="stat-row-label">Denne måneden</div>
-        <div class="stat-row-val" style="color:${DUO_C}">${duo}</div>
+        <div class="stat-row-val" style="color:${ØL_C}">${ølMonth}</div>
       </div>
       <div class="stat-half">
         <div class="stat-row-label">Ukentlig snitt</div>
-        <div class="stat-row-val" style="color:${DUO_C}">${duoAvg}</div>
+        <div class="stat-row-val" style="color:${ØL_C}">${ølAvg}</div>
       </div>
     </div>
     <div class="stat-card">
       <div class="stat-half">
+        <div class="stat-row-label">Denne uken</div>
+        <div class="stat-row-val" style="color:${VIN_C}">${vinWeek}</div>
+      </div>
+      <div class="stat-half">
         <div class="stat-row-label">Denne måneden</div>
-        <div class="stat-row-val" style="color:${SOLO_C}">${solo}</div>
+        <div class="stat-row-val" style="color:${VIN_C}">${vinMonth}</div>
       </div>
       <div class="stat-half">
         <div class="stat-row-label">Ukentlig snitt</div>
-        <div class="stat-row-val" style="color:${SOLO_C}">${soloAvg}</div>
+        <div class="stat-row-val" style="color:${VIN_C}">${vinAvg}</div>
       </div>
     </div>
   `;
