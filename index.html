@@ -18,7 +18,6 @@
   --muted2: #b0aaaa;
   --øl:     #b5730a;
   --vin:    #7a1e2e;
-  --cognac: #6b3e1f;
   --r:      14px;
   --rs:     9px;
 }
@@ -180,9 +179,6 @@ body {
 
 .reg-row-vin .reg-adj,
 .reg-row-vin .reg-center { background: var(--vin); }
-
-.reg-row-cognac .reg-adj,
-.reg-row-cognac .reg-center { background: var(--cognac); }
 
 /* DIVIDER */
 .section-divider {
@@ -367,12 +363,6 @@ body {
         <span class="reg-count" id="count-vin">0</span>
       </div>
       <button class="reg-adj" onclick="adjust('vin', 1)">+</button>
-        <div class="reg-row reg-row-cognac">
-      <button class="reg-adj" onclick="adjust('cognac', -1)">−</button>
-      <div class="reg-center">
-        <span class="reg-count" id="count-cognac">0</span>
-      </div>
-      <button class="reg-adj" onclick="adjust('cognac', 1)">+</button>
     </div>
   </div>
 </div>
@@ -452,7 +442,7 @@ function adjust(type, delta) {
   } else {
     all[activeDay][type] = next;
   }
-  if (!all[activeDay].øl && !all[activeDay].vin && !all[activeDay].cognac) delete all[activeDay];
+  if (!all[activeDay].øl && !all[activeDay].vin) delete all[activeDay];
   save(all);
   render();
   const val = (all[activeDay] && all[activeDay][type]) || 0;
@@ -483,15 +473,11 @@ function renderStrip() {
 
     const ølCount  = e.øl  || 0;
     const vinCount = e.vin || 0;
-    const cognacCount = e.cognac || 0;
-    const cognacCount = e.cognac || 0;
     let dotHtml = '<div class="chip-dots">';
     for (let i = 0; i < Math.min(ølCount, 3); i++)
       dotHtml += `<span style="background:${isActive ? 'rgba(255,255,255,0.7)' : ØL_C}"></span>`;
     for (let i = 0; i < Math.min(vinCount, 3); i++)
       dotHtml += `<span style="background:${isActive ? 'rgba(255,255,255,0.7)' : VIN_C}"></span>`;
-    for (let i = 0; i < Math.min(cognacCount, 3); i++)
-      dotHtml += `<span style="background:${isActive ? 'rgba(255,255,255,0.7)' : '#6b3e1f'}"></span>`;
     dotHtml += '</div>';
 
     btn.innerHTML = `<span class="dn">${DAYS_NO[(d.getDay()+6)%7]}</span><span class="dd">${d.getDate()}</span>${dotHtml}`;
@@ -505,7 +491,6 @@ function renderCounts() {
   const e   = all[activeDay] || {};
   document.getElementById('count-øl').textContent  = e.øl  || 0;
   document.getElementById('count-vin').textContent = e.vin || 0;
-  document.getElementById('count-cognac').textContent = e.cognac || 0;
 }
 
 function renderCal() {
@@ -549,15 +534,11 @@ function renderCal() {
 
     const ølCount  = e.øl  || 0;
     const vinCount = e.vin || 0;
-    const cognacCount = e.cognac || 0;
-    const cognacCount = e.cognac || 0;
     let dots = '';
     for (let i = 0; i < Math.min(ølCount, 4); i++)
       dots += `<div class="cal-dot" style="background:${ØL_C}"></div>`;
     for (let i = 0; i < Math.min(vinCount, 4); i++)
       dots += `<div class="cal-dot" style="background:${VIN_C}"></div>`;
-    for (let i = 0; i < Math.min(cognacCount, 4); i++)
-      dots += `<div class="cal-dot" style="background:#6b3e1f"></div>`;
 
     cell.innerHTML = `
       <div class="cal-num-wrap"><span class="cal-num">${day}</span></div>
@@ -575,7 +556,7 @@ function renderStats() {
   const all = load();
   const daysInMo = new Date(yr, mi + 1, 0).getDate();
 
-  let ølMonth = 0, vinMonth = 0, cognacMonth = 0;
+  let ølMonth = 0, vinMonth = 0;
   const allWeeks = new Set();
 
   for (let day = 1; day <= daysInMo; day++) {
@@ -585,7 +566,6 @@ function renderStats() {
     allWeeks.add(`${wy}-${wk}`);
     if (e.øl)  ølMonth  += e.øl;
     if (e.vin) vinMonth += e.vin;
-    if (e.cognac) cognacMonth += e.cognac;
   }
 
   // This week
@@ -595,12 +575,11 @@ function renderStats() {
     const d = new Date(ws); d.setDate(ws.getDate() + i);
     weekDays.push(ds(d));
   }
-  let ølWeek = 0, vinWeek = 0, cognacWeek = 0;
+  let ølWeek = 0, vinWeek = 0;
   weekDays.forEach(key => {
     const e = all[key] || {};
     ølWeek  += e.øl  || 0;
     vinWeek += e.vin || 0;
-    cognacWeek += e.cognac || 0;
   });
 
   const weeks = allWeeks.size || 1;
