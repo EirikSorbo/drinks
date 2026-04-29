@@ -107,7 +107,7 @@ body {
 }
 .day-chip .dn { font-size: 8px; letter-spacing: 0.06em; text-transform: uppercase; }
 .day-chip .dd { font-size: 13px; font-weight: 600; line-height: 1.2; }
-.day-chip .chip-dots { display: flex; gap: 2px; height: 4px; align-items: center; margin-top: 2px; flex-wrap: wrap; justify-content: center; }
+.day-chip .chip-dots { display: flex; gap: 2px; min-height: 4px; align-items: center; margin-top: 2px; flex-wrap: wrap; justify-content: center; max-height: 12px; overflow: hidden; }
 .day-chip .chip-dots span { width: 3px; height: 3px; border-radius: 50%; display: block; flex-shrink: 0; }
 .day-chip.active { background: var(--ink); border-color: var(--ink); color: var(--surface); }
 
@@ -374,6 +374,7 @@ const TYPES = [
   { key: 'vin',  color: '#7a1e2e', emoji: '🍷' },
   { key: 'sprit',color: '#3d1a08', emoji: '🥃' },
 ];
+const MAX_TOTAL = 10;
 
 function load() { try { return JSON.parse(localStorage.getItem('drinks_v2') || '{}'); } catch { return {}; } }
 function save(d) { localStorage.setItem('drinks_v2', JSON.stringify(d)); }
@@ -415,7 +416,9 @@ function adjust(type, delta) {
   const all = load();
   if (!all[activeDay]) all[activeDay] = {};
   const cur = all[activeDay][type] || 0;
-  const next = Math.max(0, cur + delta);
+  const total = TYPES.reduce((sum, t) => sum + (all[activeDay][t.key] || 0), 0);
+  const next = Math.max(0, Math.min(cur + delta, cur + (MAX_TOTAL - total)));
+  if (next === cur) return;
   if (next === 0) delete all[activeDay][type];
   else all[activeDay][type] = next;
   if (TYPES.every(t => !all[activeDay][t.key])) delete all[activeDay];
@@ -451,7 +454,7 @@ function renderStrip() {
     let dotHtml = '<div class="chip-dots">';
     TYPES.forEach(t => {
       const count = e[t.key] || 0;
-      for (let i = 0; i < Math.min(count, 2); i++)
+      for (let i = 0; i < count; i++)
         dotHtml += `<span style="background:${isActive ? 'rgba(255,255,255,0.75)' : t.color}"></span>`;
     });
     dotHtml += '</div>';
@@ -511,7 +514,7 @@ function renderCal() {
     let dots = '';
     TYPES.forEach(t => {
       const count = e[t.key] || 0;
-      for (let i = 0; i < Math.min(count, 3); i++)
+      for (let i = 0; i < count; i++)
         dots += `<div class="cal-dot" style="background:${t.color}"></div>`;
     });
 
