@@ -9,8 +9,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 :root {
-  --ink:    #1a1a2e;
-  --ink2:   #252540;
+  --ink:    #7a1e2e;
+  --ink2:   #9a3a4a;
   --surface:#f4f1ec;
   --paper:  #faf8f4;
   --edge:   #e2ddd6;
@@ -122,9 +122,9 @@ body {
   color: var(--muted);
   margin-bottom: 12px;
 }
-.reg-buttons { display: flex; flex-direction: column; gap: 10px; }
+.reg-buttons { display: flex; flex-direction: row; gap: 10px; }
 
-.reg-row {
+.reg-row { flex:1;
   display: flex;
   align-items: center;
   border-radius: var(--r);
@@ -166,14 +166,12 @@ body {
   text-transform: uppercase;
 }
 .reg-count {
-  font-size: 22px;
+  font-size: 15px;
   font-weight: 600;
   min-width: 28px;
   text-align: center;
   line-height: 1;
-  background: rgba(0,0,0,0.15);
-  border-radius: 7px;
-  padding: 2px 8px;
+
 }
 
 .reg-row-øl .reg-adj,
@@ -355,7 +353,6 @@ body {
     <div class="reg-row reg-row-øl">
       <button class="reg-adj" onclick="adjust('øl', -1)">−</button>
       <div class="reg-center">
-        <span class="reg-name">Øl</span>
         <span class="reg-count" id="count-øl">0</span>
       </div>
       <button class="reg-adj" onclick="adjust('øl', 1)">+</button>
@@ -363,7 +360,6 @@ body {
     <div class="reg-row reg-row-vin">
       <button class="reg-adj" onclick="adjust('vin', -1)">−</button>
       <div class="reg-center">
-        <span class="reg-name">Vin</span>
         <span class="reg-count" id="count-vin">0</span>
       </div>
       <button class="reg-adj" onclick="adjust('vin', 1)">+</button>
