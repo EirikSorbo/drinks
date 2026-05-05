@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Units</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Drinks">
+<link rel="apple-touch-icon" id="apple-touch-icon">
+<title>Drinks</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -34,10 +38,11 @@ body {
 
 /* APP HEADER */
 .app-header {
-  padding: 12px 20px 8px;
+  padding: 8px 12px 8px 16px;
   background: var(--paper);
   border-bottom: 1px solid var(--edge);
-  text-align: center;
+  display: flex;
+  align-items: center;
 }
 .app-title {
   font-size: 18px;
@@ -45,7 +50,10 @@ body {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ink);
+  flex: 1;
+  text-align: center;
 }
+.header-actions { display: flex; gap: 6px; }
 
 /* WEEK NAV */
 .week-nav {
@@ -285,6 +293,24 @@ body {
 }
 .stat-row-val { font-size: 16px; font-weight: 400; line-height: 1; }
 
+/* EXPORT / IMPORT */
+.data-btn {
+  background: none;
+  border: 1px solid var(--edge);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 15px;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+.data-btn:active { background: var(--edge); color: var(--ink); }
+
 /* TOAST */
 .toast {
   position: fixed;
@@ -310,7 +336,13 @@ body {
 <body>
 
 <div class="app-header">
+  <div style="width:66px"></div>
   <div class="app-title">Drinks</div>
+  <div class="header-actions">
+    <button class="data-btn" onclick="exportData()" title="Eksporter">↑</button>
+    <button class="data-btn" onclick="document.getElementById('import-input').click()" title="Importer">↓</button>
+    <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
 </div>
 
 <div class="week-nav">
@@ -375,9 +407,10 @@ const TYPES = [
   { key: 'sprit',color: '#3d1a08', emoji: '🥃' },
 ];
 const MAX_TOTAL = 10;
+const STORAGE_KEY = 'drinks_v2';
 
-function load() { try { return JSON.parse(localStorage.getItem('drinks_v2') || '{}'); } catch { return {}; } }
-function save(d) { localStorage.setItem('drinks_v2', JSON.stringify(d)); }
+function load() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; } }
+function save(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
 
 function ds(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -428,6 +461,42 @@ function adjust(type, delta) {
   const t = TYPES.find(t => t.key === type);
   if (delta > 0) toast(`${t.emoji} +1 (${val} totalt)`);
   else if (delta < 0 && cur > 0) toast(`${t.emoji} −1 (${val} totalt)`);
+}
+
+/* ── EXPORT ── */
+function exportData() {
+  const data = load();
+  const today = ds(new Date());
+  const filename = `drinks-backup-${today}.json`;
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  toast('📤 Eksportert');
+}
+
+/* ── IMPORT ── */
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      render();
+      toast('📥 Data importert');
+    } catch {
+      toast('⚠️ Ugyldig backup-fil');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
 }
 
 function render() { renderStrip(); renderCounts(); renderCal(); renderStats(); }
@@ -587,6 +656,100 @@ function toast(msg) {
   t._tid = setTimeout(() => t.classList.remove('show'), 1800);
 }
 
+/* ── APPLE TOUCH ICON (generated via canvas) ── */
+function generateIcon() {
+  const size = 180;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+
+  // Background: wine red with rounded corners
+  const r = 40;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(size - r, 0);
+  ctx.quadraticCurveTo(size, 0, size, r);
+  ctx.lineTo(size, size - r);
+  ctx.quadraticCurveTo(size, size, size - r, size);
+  ctx.lineTo(r, size);
+  ctx.quadraticCurveTo(0, size, 0, size - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fillStyle = '#7a1e2e';
+  ctx.fill();
+
+  // Subtle inner glow at top
+  const grad = ctx.createRadialGradient(size/2, 30, 0, size/2, 30, size * 0.8);
+  grad.addColorStop(0, 'rgba(255,255,255,0.10)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Wine glass — drawn with paths
+  ctx.save();
+  ctx.translate(size / 2, size / 2 - 6);
+  ctx.strokeStyle = 'rgba(255,255,255,0.92)';
+  ctx.fillStyle   = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth   = 5;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+
+  // Bowl (rounded trapezoid top)
+  const bw = 52, bh = 52, bt = -48;
+  ctx.beginPath();
+  ctx.moveTo(-bw/2, bt);
+  ctx.bezierCurveTo(-bw/2, bt + bh * 0.6, -bw * 0.35, bt + bh, 0, bt + bh);
+  ctx.bezierCurveTo( bw * 0.35, bt + bh,  bw/2, bt + bh * 0.6,  bw/2, bt);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Stem
+  ctx.beginPath();
+  ctx.moveTo(0, bt + bh);
+  ctx.lineTo(0, bt + bh + 34);
+  ctx.stroke();
+
+  // Base
+  ctx.beginPath();
+  ctx.moveTo(-26, bt + bh + 34);
+  ctx.lineTo( 26, bt + bh + 34);
+  ctx.stroke();
+
+  // Wine fill inside bowl
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(-bw/2, bt);
+  ctx.bezierCurveTo(-bw/2, bt + bh * 0.6, -bw * 0.35, bt + bh, 0, bt + bh);
+  ctx.bezierCurveTo( bw * 0.35, bt + bh,  bw/2, bt + bh * 0.6,  bw/2, bt);
+  ctx.closePath();
+  ctx.clip();
+  ctx.fillStyle = 'rgba(180,40,60,0.55)';
+  ctx.fillRect(-bw/2, bt + bh * 0.45, bw, bh);
+  ctx.restore();
+
+  ctx.restore();
+
+  // Three dots at bottom representing the three types
+  const dotColors = ['#b5730a', '#c04060', '#7a3010'];
+  const dotY = size - 22;
+  const spacing = 14;
+  dotColors.forEach((col, i) => {
+    const x = size / 2 + (i - 1) * spacing;
+    ctx.beginPath();
+    ctx.arc(x, dotY, 5, 0, Math.PI * 2);
+    ctx.fillStyle = col;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  document.getElementById('apple-touch-icon').href = c.toDataURL('image/png');
+}
+
+generateIcon();
 render();
 </script>
 </body>
