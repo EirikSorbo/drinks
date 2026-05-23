@@ -697,14 +697,12 @@ function renderStats() {
 function renderSummary() {
   const all = load();
 
-  // This week total
-  const ws = mondayOf(new Date());
+  // Displayed week total
   let weekTotal = 0;
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(ws); d.setDate(ws.getDate() + i);
+  weekDates().forEach(d => {
     const e = all[ds(d)] || {};
     TYPES.forEach(t => { weekTotal += e[t.key] || 0; });
-  }
+  });
 
   // All-time weekly average: sum all entries grouped by ISO week
   const weekSums = {};
