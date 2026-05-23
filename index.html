@@ -293,6 +293,39 @@ body {
 }
 .stat-row-val { font-size: 16px; font-weight: 400; line-height: 1; }
 
+/* TOTAL SUMMARY CARD */
+.summary-section { padding: 8px 12px 0; }
+.summary-card {
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: var(--r);
+  display: flex;
+  overflow: hidden;
+}
+.summary-half {
+  flex: 1;
+  padding: 8px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.summary-half + .summary-half { border-left: 1px solid var(--edge); }
+.summary-label {
+  font-size: 8px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 3px;
+}
+.summary-val {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--vin);
+  line-height: 1;
+}
+
 /* EXPORT / IMPORT */
 .data-btn {
   background: none;
@@ -392,6 +425,19 @@ body {
 
 <div class="stats-section">
   <div class="stats-grid" id="stats-grid"></div>
+</div>
+
+<div class="summary-section">
+  <div class="summary-card">
+    <div class="summary-half">
+      <div class="summary-label">Denne uken</div>
+      <div class="summary-val" id="summary-week">0</div>
+    </div>
+    <div class="summary-half">
+      <div class="summary-label">Snitt pr. uke</div>
+      <div class="summary-val" id="summary-avg">0.0</div>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -499,7 +545,7 @@ function importData(e) {
   reader.readAsText(file);
 }
 
-function render() { renderStrip(); renderCounts(); renderCal(); renderStats(); }
+function render() { renderStrip(); renderCounts(); renderCal(); renderStats(); renderSummary(); }
 
 function renderStrip() {
   const dates = weekDates();
@@ -646,6 +692,36 @@ function renderStats() {
       </div>
     </div>
   `).join('');
+}
+
+function renderSummary() {
+  const all = load();
+
+  // This week total
+  const ws = mondayOf(new Date());
+  let weekTotal = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(ws); d.setDate(ws.getDate() + i);
+    const e = all[ds(d)] || {};
+    TYPES.forEach(t => { weekTotal += e[t.key] || 0; });
+  }
+
+  // All-time weekly average: sum all entries grouped by ISO week
+  const weekSums = {};
+  Object.entries(all).forEach(([key, e]) => {
+    const d = new Date(key + 'T12:00:00');
+    const [wy, wk] = isoWeek(d);
+    const wkey = `${wy}-${wk}`;
+    if (!weekSums[wkey]) weekSums[wkey] = 0;
+    TYPES.forEach(t => { weekSums[wkey] += e[t.key] || 0; });
+  });
+  const weekKeys = Object.keys(weekSums);
+  const avg = weekKeys.length
+    ? (weekKeys.reduce((s, k) => s + weekSums[k], 0) / weekKeys.length).toFixed(1)
+    : '0.0';
+
+  document.getElementById('summary-week').textContent = weekTotal;
+  document.getElementById('summary-avg').textContent  = avg;
 }
 
 function toast(msg) {
