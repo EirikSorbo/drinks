@@ -480,7 +480,16 @@ function isoWeek(d) {
 let weekOff  = 0;
 let monthOff = 0;
 let activeDay = ds(new Date());
-const TODAY   = ds(new Date());
+let TODAY     = ds(new Date());
+
+// Keep "today" fresh if the app is left open across midnight (PWA use).
+function refreshToday() {
+  const now = ds(new Date());
+  if (now !== TODAY) {
+    if (activeDay === TODAY) activeDay = now; // follow the rollover if we were on today
+    TODAY = now;
+  }
+}
 
 function weekDates() {
   const ws = mondayOf(new Date());
@@ -497,7 +506,10 @@ function adjust(type, delta) {
   const cur = all[activeDay][type] || 0;
   const total = TYPES.reduce((sum, t) => sum + (all[activeDay][t.key] || 0), 0);
   const next = Math.max(0, Math.min(cur + delta, cur + (MAX_TOTAL - total)));
-  if (next === cur) return;
+  if (next === cur) {
+    if (delta > 0 && total >= MAX_TOTAL) toast(`Maks ${MAX_TOTAL} per dag`);
+    return;
+  }
   if (next === 0) delete all[activeDay][type];
   else all[activeDay][type] = next;
   if (TYPES.every(t => !all[activeDay][t.key])) delete all[activeDay];
@@ -533,7 +545,12 @@ function importData(e) {
   reader.onload = ev => {
     try {
       const parsed = JSON.parse(ev.target.result);
-      if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error();
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error();
+      const hasData = Object.keys(load()).length > 0;
+      if (hasData && !confirm('Dette erstatter alle registreringer på denne enheten. Fortsett?')) {
+        e.target.value = '';
+        return;
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
       render();
       toast('📥 Data importert');
@@ -697,26 +714,31 @@ function renderStats() {
 function renderSummary() {
   const all = load();
 
-  // Displayed week total
+  // Actual current-week total (always the real week, independent of navigation)
+  const ws = mondayOf(new Date());
   let weekTotal = 0;
-  weekDates().forEach(d => {
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(ws); d.setDate(ws.getDate() + i);
     const e = all[ds(d)] || {};
     TYPES.forEach(t => { weekTotal += e[t.key] || 0; });
-  });
+  }
 
-  // All-time weekly average: sum all entries grouped by ISO week
-  const weekSums = {};
-  Object.entries(all).forEach(([key, e]) => {
-    const d = new Date(key + 'T12:00:00');
-    const [wy, wk] = isoWeek(d);
-    const wkey = `${wy}-${wk}`;
-    if (!weekSums[wkey]) weekSums[wkey] = 0;
-    TYPES.forEach(t => { weekSums[wkey] += e[t.key] || 0; });
-  });
-  const weekKeys = Object.keys(weekSums);
-  const avg = weekKeys.length
-    ? (weekKeys.reduce((s, k) => s + weekSums[k], 0) / weekKeys.length).toFixed(1)
-    : '0.0';
+  // All-time weekly average: grand total / number of weeks from the first
+  // registration's week through the current week (dry weeks count as 0).
+  let avg = '0.0';
+  const entries = Object.entries(all);
+  if (entries.length) {
+    let grandTotal = 0;
+    let firstDate = null;
+    entries.forEach(([key, e]) => {
+      const d = new Date(key + 'T12:00:00');
+      if (!firstDate || d < firstDate) firstDate = d;
+      TYPES.forEach(t => { grandTotal += e[t.key] || 0; });
+    });
+    const firstMonday = mondayOf(firstDate);
+    const weeks = Math.max(1, Math.round((ws - firstMonday) / (7 * 86400000)) + 1);
+    avg = (grandTotal / weeks).toFixed(1);
+  }
 
   document.getElementById('summary-week').textContent = weekTotal;
   document.getElementById('summary-avg').textContent  = avg;
@@ -822,6 +844,10 @@ function generateIcon() {
 
   document.getElementById('apple-touch-icon').href = c.toDataURL('image/png');
 }
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) { refreshToday(); render(); }
+});
 
 generateIcon();
 render();
